@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 
 public class GameManager : MonoBehaviour
 {
@@ -9,21 +10,31 @@ public class GameManager : MonoBehaviour
     public GameObject[] spawners;
     public GameObject player1Choice;
     public GameObject player2Choice;
+    public TextMeshProUGUI text;
+    public GameObject MainMenuButton;
+    public GameObject PlayAgainButton;
     GameObject fallingDisc;
     bool isPlayer1Turn = true;
     static int length = 7;
     static int height = 6;
+    float delay = 2.0f;
+    bool gameOver = false;
 
     int[,] State = new int [length,height];
     private void Start()
     {
+        Time.timeScale = 1;
+        isPlayer1Turn = true;
         player1Choice.SetActive(false);
         player2Choice.SetActive(false);
+        gameOver = false;
+        delay = 2.0f;
+        int[,] State = new int[length, height];
     }
 
     public void HoverColumn(int column)
     {
-        if (State[column - 1, height - 1] == 0 && (fallingDisc == null || fallingDisc.GetComponent<Rigidbody>().velocity == Vector3.zero))
+        if ((State[column - 1, height - 1] == 0 && (fallingDisc == null || fallingDisc.GetComponent<Rigidbody>().velocity == Vector3.zero)) && gameOver == false)
         {
             if (isPlayer1Turn)
             {
@@ -40,7 +51,7 @@ public class GameManager : MonoBehaviour
 
     public void ColumnSelect(int column)
     {
-        if (fallingDisc == null || fallingDisc.GetComponent<Rigidbody>().velocity == Vector3.zero)
+        if ((fallingDisc == null || fallingDisc.GetComponent<Rigidbody>().velocity == Vector3.zero) && gameOver == false)
         {
             if (UpdateState(column))
             {
@@ -54,7 +65,8 @@ public class GameManager : MonoBehaviour
 
                     if (Win(1))
                     {
-                        Debug.Log("player 1 won!");
+                        text.text = "Player 1 Wins!";
+                        gameOver = true;
                     }
                 }
                 else if (!isPlayer1Turn)
@@ -65,13 +77,15 @@ public class GameManager : MonoBehaviour
 
                     if (Win(2))
                     {
-                        Debug.Log("player 2 won!");
+                        text.text = "Player 2 Wins!";
+                        gameOver = true;
                     }
                 }
 
                 if(Draw())
                 {
-                    Debug.Log("draw!");
+                    text.text = "Draw!";
+                    gameOver = true;
                 }
             }
         }
@@ -155,5 +169,23 @@ public class GameManager : MonoBehaviour
             }
         }
         return true;
+    }
+
+    private void Update()
+    {
+        if (gameOver == true)
+        {
+            if (delay > 0)
+            {
+                delay -= Time.deltaTime;
+            }
+            if (delay <= 0)
+            {
+                Time.timeScale = 0;
+                PlayAgainButton.SetActive(true);
+                MainMenuButton.SetActive(true);
+
+            }
+        }
     }
 }
